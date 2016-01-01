@@ -54,7 +54,7 @@ def drop_units(value):
         return float(match.group(1))
 
 
-def summarize(df, start_time=None, end_time=None):
+def summarize(df, cost, start_time=None, end_time=None):
     """Return a table describing daily energy usage"""
     if end_time is not None and start_time is None:
         raise ValueError('end_time should not be specified unless start_time is specified')
@@ -72,10 +72,13 @@ def summarize(df, start_time=None, end_time=None):
         'PANEL COLLINS ELECTRIC METER.Analog Inputs.Energy.CollinCtr-Energy-kWh (Trend1)',
         'PANEL DL ELECTRIC METER.Analog Inputs.Energy.DL-Energy-kWh (Trend1)'
     ]]
+    group_labels = ['Main', 'DHB', 'M1', 'DG', 'DE-ATS', 'Collins', 'DL']
     daily_energy = grouped_cumulative_energy.max() - grouped_cumulative_energy.min()
-    daily_energy.columns = [['Main', 'DHB', 'M1', 'DG', 'DE-ATS', 'Collins', 'DL']]
+    daily_energy.columns = [label + ' (kWh)' for label in group_labels]
+    daily_dollars = daily_energy * cost
+    daily_dollars.columns = [label + ' ($)' for label in group_labels]
 
-    return daily_energy
+    return pd.concat((daily_energy, daily_dollars), axis=1)
 
 
 def group_key(df, start_time, end_time):
@@ -110,8 +113,10 @@ if __name__ == '__main__':
     parser.add_argument('--end', dest='end_time', nargs='?', help='end time for summary table')
     parser.add_argument('-i', dest='input_file',  help='name of input file')
     parser.add_argument('-o', dest='output_file', help='name of output file')
+    parser.add_argument('--cost', dest='cost', nargs='?', default=.16,
+                        help='cost of electricity, in $/kWh', type=float)
     args = parser.parse_args()
     transformed = parse(args.input_file)
     if args.summarize:
-        transformed = summarize(transformed, args.start_time, args.end_time)
+        transformed = summarize(transformed, args.cost, args.start_time, args.end_time)
     transformed.to_csv(args.output_file)

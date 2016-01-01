@@ -56,12 +56,12 @@ def drop_units(value):
 
 def summarize(df, start_time=None, end_time=None):
     """Return a table describing daily energy usage"""
-    if (start_time is None) != (end_time is None):
-        raise ValueError('start_time and end_time should both be either present or not present')
+    if end_time is not None and start_time is None:
+        raise ValueError('end_time should not be specified unless start_time is specified')
     elif start_time is not None and end_time is not None:
         df = df.iloc[df.index.indexer_between_time(start_time, end_time),:]
 
-    grouped = df.groupby(df.index.shift(-1, freq=timedelta(hours=12)).date)
+    grouped = df.groupby(group_key(df, start_time, end_time))
 
     grouped_cumulative_energy = grouped[[
         'MAIN ELECTRIC METER.Analog Inputs.Energy.Main-kWh-Energy (Trend1)',
@@ -76,6 +76,29 @@ def summarize(df, start_time=None, end_time=None):
     daily_energy.columns = [['Main', 'DHB', 'M1', 'DG', 'DE-ATS', 'Collins', 'DL']]
 
     return daily_energy
+
+
+def group_key(df, start_time, end_time):
+    """Return a key by which to group measurements"""
+    if start_time is None and end_time is None:
+        return df.index.date
+    elif start_time is not None and end_time is None:
+        # associate times before start_time with the previous day
+        return df.index.shift(-1, to_timedelta(start_time)).date
+    elif end_time is not None:
+        start_timedelta = to_timedelta(start_time)
+        end_timedelta = to_timedelta(end_time)
+        if start_timedelta < end_timedelta:
+            # measurement is of daytime usage, so no need to shift
+            return df.index.date
+        else:
+            # measurement is of nighttime usage, so need to associate times with dates wisely
+            return df.index.shift(-1, 0.5 * (start_timedelta + end_timedelta)).date
+
+
+def to_timedelta(time_string):
+    hours, minutes = map(int, time_string.split(':'))
+    return timedelta(hours=hours, minutes=minutes)
 
 
 if __name__ == '__main__':

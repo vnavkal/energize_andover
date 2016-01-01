@@ -104,6 +104,28 @@ def to_timedelta(time_string):
     return timedelta(hours=hours, minutes=minutes)
 
 
+def header(start_time, end_time):
+    """Return a header to print at the top of output files"""
+    if end_time is None:
+        if start_time is None:
+            return 'Usage statistics from all hours of each day'
+        else:
+            return 'Usage statistics start at %s each day' % start_time
+    else:
+        return 'Usage statistics from between %s and %s each day' % (start_time, end_time)
+
+
+def save_df(df, summarize, start_time, end_time, output_file):
+    """Save input DataFrame to a csv file"""
+    if summarize:
+        with open(output_file, 'w') as output_file:
+            output_file.write(header(start_time, end_time))
+            output_file.write('\n')
+            transformed.to_csv(output_file, mode='a')
+    else:
+        transformed.to_csv(output_file)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='script for parsing Metasys data files')
     parser.add_argument('-s', '--summarize', dest='summarize', action='store_true',
@@ -119,4 +141,5 @@ if __name__ == '__main__':
     transformed = parse(args.input_file)
     if args.summarize:
         transformed = summarize(transformed, args.cost, args.start_time, args.end_time)
-    transformed.to_csv(args.output_file)
+
+    save_df(transformed, args.summarize, args.start_time, args.end_time, args.output_file)

@@ -17,6 +17,10 @@ def parse(input_file):
     # Read the file into a pandas Series with MultiIndex
     df = pd.read_csv(input_file, index_col=[0, 1])['Object Value']
 
+    # Drop duplicate measurements
+    df = df.groupby(df.index).last()
+    df.index = pd.MultiIndex.from_tuples(df.index)
+
     # Remove units from values, so that they are numeric
     df = df.apply(drop_units)
 

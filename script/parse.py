@@ -65,9 +65,7 @@ def summarize(df, cost, start_time=None, end_time=None):
     elif start_time is not None and end_time is not None:
         df = df.iloc[df.index.indexer_between_time(start_time, end_time),:]
 
-    grouped = df.groupby(group_key(df, start_time, end_time))
-
-    grouped_cumulative_energy = grouped[[
+    summary_columns = [
         'MAIN ELECTRIC METER.Analog Inputs.Energy.Main-kWh-Energy (Trend1)',
         'PANEL DHB ELECTRIC METER.Analog Inputs.Energy.DHB - kWh Total (Trend1)',
         'PANEL M1 ELECTRIC METER.Analog Inputs.Energy.M1-kWh-Energy (Trend1)',
@@ -75,12 +73,20 @@ def summarize(df, cost, start_time=None, end_time=None):
         'PANEL DE-ATS ELECTRIC METER.Analog Inputs.Energy.DE-ATS-Energy-kWh (Trend1)',
         'PANEL COLLINS ELECTRIC METER.Analog Inputs.Energy.CollinCtr-Energy-kWh (Trend1)',
         'PANEL DL ELECTRIC METER.Analog Inputs.Energy.DL-Energy-kWh (Trend1)'
-    ]]
-    group_labels = ['Main', 'DHB', 'M1', 'DG', 'DE-ATS', 'Collins', 'DL']
+    ]
+    summary_labels = ['Main', 'DHB', 'M1', 'DG', 'DE-ATS', 'Collins', 'DL']
+    subset = df[summary_columns]
+
+    # Sometimes measurements are incorrectly reported as 0
+    subset = subset.replace(to_replace=0, value=np.nan)
+
+    grouped = subset.groupby(group_key(subset, start_time, end_time))
+
+    grouped_cumulative_energy = grouped[summary_columns]
     daily_energy = grouped_cumulative_energy.max() - grouped_cumulative_energy.min()
-    daily_energy.columns = [label + ' (kWh)' for label in group_labels]
+    daily_energy.columns = [label + ' (kWh)' for label in summary_labels]
     daily_dollars = daily_energy * cost
-    daily_dollars.columns = [label + ' ($)' for label in group_labels]
+    daily_dollars.columns = [label + ' ($)' for label in summary_labels]
 
     return pd.concat((daily_energy, daily_dollars), axis=1)
 

@@ -1,10 +1,12 @@
 <h1>{{ title }}</h1>
 
-<form action="{% url 'energize_andover:display_choice' %}" method="post">
-{% csrf_token %}
-{% for choice in choices %}
-    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-    <label for="choice{{ forloop.counter }}">{{ choice }}</label><br />
-{% endfor %}
-<input type="submit" value="Submit" />
+<form action="" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <p>{{ form.non_field_errors }}</p>
+  <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
+  <p>
+    {{ form.docfile.errors }}
+    {{ form.docfile }}
+  </p>
+  <p><input type="submit" value="Upload" /></p>
 </form>

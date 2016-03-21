@@ -1,16 +1,19 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from energize_andover.forms import MetasysUploadForm
+from energize_andover.script.file_transfer import transform_and_respond
+from django.core.urlresolvers import reverse
 
 def index(request):
-    title = 'Metasys Parsing'
-    context = {'title': title, 'choices': ('a', 'b')}
-    return HttpResponse(render(request, 'energize_andover/index.html', context))
+    # Handle file upload
+    if request.method == 'POST':
+        form = MetasysUploadForm(request.POST, request.FILES)
+        print('post is %s' % request.POST)
+        if form.is_valid():
+            return transform_and_respond(form.cleaned_data)
+    else:
+        form = MetasysUploadForm() # An empty, unbound form
 
-def choose(request):
-    return HttpResponse('you made a choice')
-    # return HttpResponseRedirect('energize_andover/display_choice')
-
-def display_choice(request):
-    title = 'Here is your choice:'
-    context = {'title': title, 'value': 'asdf'}
-    return HttpResponse(render(request, 'energize_andover/display_choice.html', context))
+    # Render list page with the documents and the form
+    return HttpResponse(render(request, 'energize_andover/index.html',
+                               context={'title': 'Metasys Parsing', 'form': form}))

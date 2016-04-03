@@ -125,7 +125,7 @@ def header(start_time, end_time):
         return 'Usage statistics from between %s and %s each day' % (start_time, end_time)
 
 
-def save_df(df, summarize, start_time, end_time, output_file):
+def save_df(transformed, summarize, start_time, end_time, output_file):
     """Save input DataFrame to a csv file"""
     if summarize:
         with open(output_file, 'w') as output_file:

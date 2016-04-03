@@ -1,0 +1,13 @@
+<h1>{{ title }}</h1>
+
+<form action="" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <p>{{ form.non_field_errors }}</p>
+  <p>{{ form.summarize.label }} {{ form.summarize }}</p>
+  <p>{{ form.metasys_file.label_tag }} {{ form.metasys_file.help_text }}</p>
+  <p>
+    {{ form.metasys_file.errors }}
+    {{ form.metasys_file }}
+  </p>
+  <p><input type="submit" value="Upload" /></p>
+</form>

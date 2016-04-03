@@ -3,32 +3,36 @@ from mysite.settings import BASE_DIR
 from energize_andover.script.parse import parse, summarize, save_df
 import os
 
-def save(form_data):
-    uploaded_file = form_data['metasys_file']
-    uploaded_filename = uploaded_file.name
-    full_filename = os.path.join(BASE_DIR, uploaded_filename)
+TEMPORARY_INPUT_FILENAME = 'metasys_log.txt'
+OUTPUT_FILENAME = 'parsed_metasys_log.csv'
 
-    with open(full_filename, 'wb') as fout:
-        for chunk in uploaded_file.chunks():
+def get_transformed_file(form_data):
+    """Transforms and returns the Metasys log file attached to the form"""
+    _save_input_file(form_data['metasys_file'])
+    _transform_saved_input_file(form_data['summarize'])
+    return _respond_with_parsed_file()
+
+def _temporary_input_file_path():
+    return os.path.join(BASE_DIR, TEMPORARY_INPUT_FILENAME)
+
+def _temporary_output_file_path():
+    return os.path.join(BASE_DIR, OUTPUT_FILENAME)
+
+def _save_input_file(temporary_file):
+    """Save the uploaded file to disk so it can be handled by the parse module"""
+    with open(_temporary_input_file_path(), 'wb') as fout:
+        for chunk in temporary_file.chunks():
             fout.write(chunk)
 
-    return full_filename
-
-def transform_and_save(form_data):
-    original_saved_filename = save(form_data)
-    df = parse(original_saved_filename)
-    if form_data['summarize']:
+def _transform_saved_input_file(return_summarized_data):
+    df = parse(_temporary_input_file_path())
+    if return_summarized_data:
         df = summarize(df, .12)
-    transformed_saved_filename = original_saved_filename + '_transformed'
-    save_df(df, form_data['summarize'], None, None, transformed_saved_filename)
+    save_df(df, summarize, None, None, _temporary_output_file_path())
 
-    return transformed_saved_filename
-
-def transform_and_respond(form_data):
-    transformed_saved_filename = transform_and_save(form_data)
-
-    transformed_saved_file = open(transformed_saved_filename).read()
-    response = HttpResponse(transformed_saved_file, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % transformed_saved_filename
+def _respond_with_parsed_file():
+    parsed_file = open(_temporary_output_file_path()).read()
+    response = HttpResponse(parsed_file, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % OUTPUT_FILENAME
 
     return response

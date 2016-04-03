@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from energize_andover.forms import MetasysUploadForm
-from energize_andover.script.file_transfer import transform_and_respond
+from energize_andover.script.file_transfer import get_transformed_file
 from django.core.urlresolvers import reverse
 
 def index(request):
@@ -10,7 +10,7 @@ def index(request):
         form = MetasysUploadForm(request.POST, request.FILES)
         print('post is %s' % request.POST)
         if form.is_valid():
-            return transform_and_respond(form.cleaned_data)
+            return get_transformed_file(form.cleaned_data)
     else:
         form = MetasysUploadForm() # An empty, unbound form
 

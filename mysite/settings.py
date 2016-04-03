@@ -5,7 +5,8 @@ import mysite.environment as environment
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-ALLOWED_HOSTS = []
+# TODO: Set this correctly -- allowing all hosts is insecure
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

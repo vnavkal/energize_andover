@@ -1,13 +1,16 @@
 import os
+import socket
 import mysite.environment as environment
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+ALLOWED_HOSTS=['.virajnavkal.com', 'mysite-dev.us-west-1.elasticbeanstalk.com']
 
-# TODO: Set this correctly -- allowing all hosts is insecure
-ALLOWED_HOSTS = ['*']
-
+# Elastic Beanstalk health checks contact the application using an internal IP, so that needs to be
+# added to ALLOWED_HOSTS
+local_ip = str(socket.gethostbyname(socket.gethostname()))
+ALLOWED_HOSTS.append(local_ip)
 
 # Application definition
 

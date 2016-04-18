@@ -7,10 +7,12 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 """
 
-import sys, os
-sys.path.insert(0, '/opt/python/current/app')
-from django.core.wsgi import get_wsgi_application
+import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+from django.core.wsgi import get_wsgi_application
+from mezzanine.utils.conf import real_project_name
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE",
+                      "%s.settings" % real_project_name("mysite"))
 
 application = get_wsgi_application()

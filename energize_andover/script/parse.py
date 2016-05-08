@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import numpy as np
-from datetime import timedelta
+import datetime
 import re
 
 
@@ -97,10 +97,10 @@ def group_key(df, start_time, end_time):
         return df.index.date
     elif start_time is not None and end_time is None:
         # associate times before start_time with the previous day
-        return df.index.shift(-1, to_timedelta(start_time)).date
+        return df.index.shift(-1, _timedelta_since_midnight(start_time)).date
     elif end_time is not None:
-        start_timedelta = to_timedelta(start_time)
-        end_timedelta = to_timedelta(end_time)
+        start_timedelta = _timedelta_since_midnight(start_time)
+        end_timedelta = _timedelta_since_midnight(end_time)
         if start_timedelta < end_timedelta:
             # measurement is of daytime usage, so no need to shift
             return df.index.date
@@ -109,9 +109,16 @@ def group_key(df, start_time, end_time):
             return df.index.shift(-1, 0.5 * (start_timedelta + end_timedelta)).date
 
 
-def to_timedelta(time_string):
-    hours, minutes = map(int, time_string.split(':'))
-    return timedelta(hours=hours, minutes=minutes)
+def _timedelta_since_midnight(time):
+    return datetime.timedelta(hours=time.hour, minutes=time.minute)
+
+
+def _string_to_time(time_string):
+    if time_string is None:
+        return None
+    else:
+        hour, minute = map(int, time_string.split(':'))
+        return datetime.time(hour=hour, minute=minute)
 
 
 def header(start_time, end_time):
@@ -149,7 +156,11 @@ if __name__ == '__main__':
                         help='cost of electricity, in $/kWh', type=float)
     args = parser.parse_args()
     transformed = parse(args.input_file)
+
+    start_time = _string_to_time(args.start_time)
+    end_time = _string_to_time(args.end_time)
+
     if args.summarize:
-        transformed = summarize(transformed, args.cost, args.start_time, args.end_time)
+        transformed = summarize(transformed, args.cost, start_time, end_time)
 
     save_df(transformed, args.summarize, args.start_time, args.end_time, args.output_file)

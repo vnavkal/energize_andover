@@ -15,14 +15,13 @@ def parse(input_file):
         pandas DataFrame, with timestamps as index and measurement variables as columns
     """
     # Read the file into a pandas Series with MultiIndex
-    df = pd.read_csv(input_file, index_col=[0, 1])['Object Value']
+    df = pd.read_csv(input_file,
+                     index_col=[0, 1],
+                     converters={'Object Value': drop_units})['Object Value']
 
     # Drop duplicate measurements
     df = df.groupby(df.index).last()
     df.index = pd.MultiIndex.from_tuples(df.index)
-
-    # Remove units from values, so that they are numeric
-    df = df.apply(drop_units)
 
     # Transform df from 1-dimensional Series with MultiIndex to 2-dimensional DataFrame
     df = df.unstack(level=-1)

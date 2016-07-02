@@ -8,6 +8,7 @@ from django.views.i18n import set_language
 # from mezzanine.core.views import direct_to_template
 from mezzanine.conf import settings
 from mezzanine.pages.views import page
+from mezzanine.blog.views import blog_post_list
 
 
 admin.autodiscover()
@@ -58,17 +59,7 @@ urlpatterns += [
     # NOTE: Don't forget to import the view function too!
 
     url("^$", page, {"slug": "/"}, name="home"),
-
-    # HOMEPAGE FOR A BLOG-ONLY SITE
-    # -----------------------------
-    # This pattern points the homepage to the blog post listing page,
-    # and is useful for sites that are primarily blogs. If you use this
-    # pattern, you'll also need to set BLOG_SLUG = "" in your
-    # ``settings.py`` module, and delete the blog page object from the
-    # page tree in the admin if it was installed.
-    # NOTE: Don't forget to import the view function too!
-
-    # url("^$", mezzanine.blog.views.blog_post_list, name="home"),
+    url(r'^blog/$', blog_post_list, name="blog"),
 
     # MEZZANINE'S URLS
     # ----------------

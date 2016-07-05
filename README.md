@@ -8,7 +8,7 @@ The parsing script is `energize_andover/script/parse.py`.  It works as a standal
 
 Here is an example of how it could be used:
 ```bash
-python energize_andover/script/parse.py -i "data/AHS-ElectricTrend-Nov_Dec2015.csv" -o output.csv -s --start 17:00 --end 8:00
+python script/parse.py -i "data/AHS-ElectricTrend-Nov_Dec2015.csv" -o output.csv -s --start 17:00 --end 8:00 -c "data/columns.txt"
 ```
 
 ## Online interface

@@ -16,7 +16,7 @@ def parse(input_file):
     """
     # Read the file into a pandas Series with MultiIndex
     df = pd.read_csv(input_file,
-                     index_col=[0, 1],
+                     index_col=[0, 2],
                      converters={'Object Value': drop_units})['Object Value']
 
     # Drop duplicate measurements
@@ -26,24 +26,10 @@ def parse(input_file):
     # Transform df from 1-dimensional Series with MultiIndex to 2-dimensional DataFrame
     df = df.unstack(level=-1)
 
-    # Remove prefixes from column names
-    df.columns = [drop_prefix(column_name) for column_name in df.columns]
-
     # Convert index to DatetimeIndex
     df.index = pd.to_datetime(df.index, dayfirst=True)
 
     return df
-
-
-def drop_prefix(variable_name):
-    """Remove the 'Town Of Andover:AHS-NAE1/FEC Bus2.' prefix from variable names"""
-    pattern = re.compile(r"\ATown Of Andover:AHS-NAE1/FEC Bus2\.(.*)\Z")
-    match = pattern.match(variable_name)
-    if match is None:
-        # variable_name was not of the expected format
-        return np.nan
-    else:
-        return match.group(1)
 
 
 def drop_units(value):
